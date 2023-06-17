@@ -14,7 +14,7 @@ describe('Signup Test', () => {
         cy.get('a[aria-label="dismiss cookie message"]').click()
     })
 
-    it('Test valid signup', () => {
+    it('Test valid sign up via UI', () => {
         cy.get('#navbarAccount').click()
         cy.get('#navbarLoginButton').click()
         cy.get('a[href="#/register"]').click()
@@ -31,5 +31,15 @@ describe('Signup Test', () => {
 
     })
 
+    it.skip('Test valid sign in via UI', () => {
+        cy.get('#navbarAccount').click()
+        cy.get('#navbarLoginButton').click()
+
+        cy.get('#email').type(user.email)
+        cy.get('#password').type(user.password)
+        cy.get('#loginButton').click()
+        cy.url().should("include", "http://localhost:3000/#/search")
+        cy.get('span.fa-layers-counter').contains(0)
+    })
 
 })
