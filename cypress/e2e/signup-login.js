@@ -7,6 +7,7 @@ describe('Signup Test', () => {
         password: 'andyn',
         secretAnswer: 'mama'
     }
+    let userToken = ''
 
     describe("UI tests", () => {
         beforeEach( () => {
@@ -46,7 +47,11 @@ describe('Signup Test', () => {
     })
 
     describe("API tests", () => {
-        it( 'Test valid sign in via API', () => {
+        beforeEach(() => {
+            cy.loginViaAPI(user.email, user.password)
+        })
+
+        it.skip( 'Test valid sign in via API', () => {
             cy.request('POST', 'http://localhost:3000/rest/user/login', {
                 email: user.email,
                 password: user.password,
@@ -57,6 +62,43 @@ describe('Signup Test', () => {
                 expect(response.body.authentication).to.have.property('bid')
                 expect(response.body.authentication).to.have.property('umail', user.email)
             })
+        })
+
+        it.skip("Test extract and save API token", () => {
+            cy.request('POST', 'http://localhost:3000/rest/user/login', {
+                email: user.email,
+                password: user.password,
+            }).its("body").then((body) => {
+                const token = body.authentication.token
+                cy.wrap(token).as("userToken")
+            })
+
+            userToken = cy.get("@userToken")
+        })
+
+        it.skip('Test valid sign in via API token before loading page', () => {
+            cy.visit("http://localhost:3000/", {
+                onBeforeLoad(browser) {
+                    browser.localStorage.setItem("token", userToken)
+                }
+            })
+
+            cy.visit("http://localhost:3000/")
+            cy.get(".cdk-overlay-backdrop").click(-50, -50, { force: true })
+            cy.get(".fa-layers-counter").contains(0)
+        })
+
+        it('Test valid sign in via API token to home page', () => {
+            cy.visit("http://localhost:3000/")
+            cy.get(".cdk-overlay-backdrop").click(-50, -50, { force: true })
+            cy.get(".fa-layers-counter").contains(0)
+        })
+
+        it('Test valid sign in via API token to basket page ', () => {
+            cy.visit("http://localhost:3000/#/basket")
+            cy.get(".cdk-overlay-backdrop").click(-50, -50, { force: true })
+            cy.get(".fa-layers-counter").contains(0)
+            cy.get('h1').contains('Your Basket')
         })
     })
 })
